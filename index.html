@@ -1,48 +1,123 @@
-<script>
-  async function loadCSV() {
-    try {
-      const response = await fetch('data/units.csv');
-      const text = await response.text();
-      const rows = text.trim().split('\n').slice(1); // Skip header
-      const grouped = {};
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Inventory Grid</title>
 
-      rows.forEach(row => {
-        const [unit, status, floor] = row.split(',').map(v => v.trim());
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 30px;
+      background: #f9f9f9;
+    }
+
+    h3 {
+      margin-top: 40px;
+      color: #222;
+    }
+
+    .floor-section {
+      margin-bottom: 30px;
+    }
+
+    .unit-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+      gap: 10px;
+    }
+
+    .unit-box {
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-weight: bold;
+      text-align: center;
+      color: white;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+    }
+
+    .Sold {
+      background-color: #e74c3c;
+    }
+
+    .Available {
+      background-color: #2ecc71;
+    }
+
+    .Discussion {
+      background-color: #f1c40f;
+      color: black;
+    }
+
+    .unit-box:hover {
+      transform: scale(1.05);
+      transition: 0.2s ease;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Inventory Visualization</h1>
+  <div id="inventory"></div>
+
+  <script>
+    async function loadCSV() {
+      const response = await fetch('units.csv');
+      const text = await response.text();
+      const lines = text.trim().split('\n');
+      const headers = lines[0].split(',').map(h => h.trim());
+      const data = lines.slice(1).map(line => {
+        const values = line.split(',').map(v => v.trim());
+        const row = {};
+        headers.forEach((h, i) => row[h] = values[i]);
+        return row;
+      });
+      return data;
+    }
+
+    function groupByFloor(data) {
+      const grouped = {};
+      data.forEach(row => {
+        const floor = row['Floor'];
+        const unit = row['Unit'];
+        const status = row['Status'];
         if (!grouped[floor]) grouped[floor] = [];
         grouped[floor].push({ unit, status });
       });
+      return grouped;
+    }
 
-      const container = document.createElement('div');
+    function render(grouped) {
+      const container = document.getElementById('inventory');
+      const sortedFloors = Object.keys(grouped).sort((a, b) => b - a); // High to low
 
-      // Sort floors descending (10 to 1)
-      Object.keys(grouped).sort((a, b) => b - a).forEach(floor => {
+      sortedFloors.forEach(floor => {
         const section = document.createElement('div');
-        section.innerHTML = `<h3>Floor ${floor}</h3>`;
+        section.className = 'floor-section';
+
+        const title = document.createElement('h3');
+        title.textContent = `Floor ${floor}`;
+        section.appendChild(title);
+
         const row = document.createElement('div');
-        row.style.display = 'flex';
-        row.style.flexWrap = 'wrap';
-        row.style.marginBottom = '20px';
+        row.className = 'unit-row';
 
         grouped[floor].forEach(({ unit, status }) => {
           const cell = document.createElement('div');
           cell.textContent = unit;
-          cell.className = status;
-          cell.style.margin = '5px';
-          cell.style.padding = '10px 20px';
-          cell.style.borderRadius = '8px';
+          cell.className = `unit-box ${status}`;
           row.appendChild(cell);
         });
 
         section.appendChild(row);
         container.appendChild(section);
       });
-
-      document.body.appendChild(container);
-
-    } catch (err) {
-      console.error('Error loading CSV:', err);
     }
-  }
 
-  loadCSV();
-</script>
+    loadCSV().then(data => {
+      const grouped = groupByFloor(data);
+      render(grouped);
+    });
+  </script>
+</body>
+</html>

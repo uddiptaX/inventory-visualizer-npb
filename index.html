@@ -100,7 +100,7 @@ Floor,Unit,Status
         const floorUnits = units.filter(u => u.Floor === floor);
         const label = document.createElement('div');
         label.className = 'floor-label';
-        label.textContent = Floor ${floor};
+        label.textContent = `Floor ${floor}`;
         container.appendChild(label);
 
         const row = document.createElement('div');
@@ -108,7 +108,7 @@ Floor,Unit,Status
 
         floorUnits.forEach(unit => {
           const box = document.createElement('div');
-          box.className = unit-box ${unit.Status};
+          box.className = `unit-box ${unit.Status}`;
           box.textContent = unit.Unit;
           row.appendChild(box);
         });

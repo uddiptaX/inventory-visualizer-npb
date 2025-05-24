@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Inventory Grid</title>
   <style>
@@ -54,12 +54,33 @@
 <body>
 
   <h1>Inventory Grid</h1>
-  <div id="inventory">Loading inventory...</div>
+  <div id="inventory"></div>
+
+  <!-- 🔁 Embedded CSV Data -->
+  <script id="csv-data" type="text/plain">
+Floor,Unit,Status
+12,1201,Sold
+12,1202,Available
+12,1203,Discussion
+12,1204,Available
+12,1205,Sold
+12,1206,Available
+11,1101,Available
+11,1102,Available
+11,1103,Sold
+11,1104,Available
+11,1105,Discussion
+11,1106,Available
+10,1001,Available
+10,1002,Sold
+10,1003,Available
+10,1004,Available
+10,1005,Available
+10,1006,Sold
+  </script>
 
   <script>
-    async function loadCSV(url) {
-      const res = await fetch(url);
-      const text = await res.text();
+    function parseCSV(text) {
       const lines = text.trim().split('\n');
       const headers = lines[0].split(',').map(h => h.trim());
       const data = lines.slice(1).map(line => {
@@ -73,14 +94,13 @@
 
     function renderGrid(units) {
       const container = document.getElementById('inventory');
-      container.innerHTML = '';
       const floors = [...new Set(units.map(u => u.Floor))].sort((a, b) => b - a);
 
       floors.forEach(floor => {
         const floorUnits = units.filter(u => u.Floor === floor);
         const label = document.createElement('div');
         label.className = 'floor-label';
-        label.textContent = `Floor ${floor}`;
+        label.textContent = Floor ${floor};
         container.appendChild(label);
 
         const row = document.createElement('div');
@@ -88,7 +108,7 @@
 
         floorUnits.forEach(unit => {
           const box = document.createElement('div');
-          box.className = `unit-box ${unit.Status}`;
+          box.className = unit-box ${unit.Status};
           box.textContent = unit.Unit;
           row.appendChild(box);
         });
@@ -97,14 +117,9 @@
       });
     }
 
-    const csvUrl = 'https://raw.githubusercontent.com/uddiptaX/inventory-visualizer-npb/refs/heads/main/data/units.csv'; // 👈 Replace this
-
-    loadCSV(csvUrl)
-      .then(renderGrid)
-      .catch(error => {
-        document.getElementById('inventory').innerText = 'Error loading data.';
-        console.error(error);
-      });
+    const csvText = document.getElementById('csv-data').textContent;
+    const units = parseCSV(csvText);
+    renderGrid(units);
   </script>
 </body>
 </html>

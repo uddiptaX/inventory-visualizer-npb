@@ -60,10 +60,19 @@
   <h1>Inventory Visualization</h1>
   <div id="inventory"></div>
 
+  <!-- 🔁 Embedded CSV as <script> -->
+  <script id="csv-data" type="text/plain">
+Floor,Unit,Status
+10,1001,Sold
+10,1002,Available
+10,1003,Discussion
+9,901,Available
+9,902,Sold
+9,903,Available
+  </script>
+
   <script>
-    async function loadCSV() {
-      const response = await fetch('units.csv');
-      const text = await response.text();
+    function parseCSV(text) {
       const lines = text.trim().split('\n');
       const headers = lines[0].split(',').map(h => h.trim());
       const data = lines.slice(1).map(line => {
@@ -114,10 +123,11 @@
       });
     }
 
-    loadCSV().then(data => {
-      const grouped = groupByFloor(data);
-      render(grouped);
-    });
+    // 🔁 Run
+    const csvText = document.getElementById('csv-data').textContent;
+    const data = parseCSV(csvText);
+    const grouped = groupByFloor(data);
+    render(grouped);
   </script>
 </body>
 </html>

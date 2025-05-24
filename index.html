@@ -1,56 +1,48 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Inventory Grid</title>
-  <style>
-    body { font-family: Arial; padding: 20px; }
-    table { border-collapse: collapse; width: 400px; }
-    th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
-    .Sold { background: #f44336; color: white; }
-    .Available { background: #4CAF50; color: white; }
-    .Discussion { background: #ffeb3b; color: black; }
-  </style>
-</head>
-<body>
+<script>
+  async function loadCSV() {
+    try {
+      const response = await fetch('data/units.csv');
+      const text = await response.text();
+      const rows = text.trim().split('\n').slice(1); // Skip header
+      const grouped = {};
 
-  <h2>Unit Inventory Status</h2>
-  <table id="dataTable">
-    <thead>
-      <tr><th>Unit</th><th>Status</th></tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+      rows.forEach(row => {
+        const [unit, status, floor] = row.split(',').map(v => v.trim());
+        if (!grouped[floor]) grouped[floor] = [];
+        grouped[floor].push({ unit, status });
+      });
 
-  <script>
-    async function loadCSV() {
-      try {
-        const response = await fetch('data/units.csv');
-        const text = await response.text();
-        const rows = text.trim().split('\n').slice(1); // Skip header
-        const tableBody = document.querySelector('#dataTable tbody');
-        tableBody.innerHTML = '';
+      const container = document.createElement('div');
 
-        rows.forEach(row => {
-          const [unit, status] = row.split(',');
-          const tr = document.createElement('tr');
-          const tdUnit = document.createElement('td');
-          const tdStatus = document.createElement('td');
+      // Sort floors descending (10 to 1)
+      Object.keys(grouped).sort((a, b) => b - a).forEach(floor => {
+        const section = document.createElement('div');
+        section.innerHTML = `<h3>Floor ${floor}</h3>`;
+        const row = document.createElement('div');
+        row.style.display = 'flex';
+        row.style.flexWrap = 'wrap';
+        row.style.marginBottom = '20px';
 
-          tdUnit.textContent = unit.trim();
-          tdStatus.textContent = status.trim();
-          tdStatus.className = status.trim();
-
-          tr.appendChild(tdUnit);
-          tr.appendChild(tdStatus);
-          tableBody.appendChild(tr);
+        grouped[floor].forEach(({ unit, status }) => {
+          const cell = document.createElement('div');
+          cell.textContent = unit;
+          cell.className = status;
+          cell.style.margin = '5px';
+          cell.style.padding = '10px 20px';
+          cell.style.borderRadius = '8px';
+          row.appendChild(cell);
         });
-      } catch (err) {
-        console.error('Error loading CSV:', err);
-      }
+
+        section.appendChild(row);
+        container.appendChild(section);
+      });
+
+      document.body.appendChild(container);
+
+    } catch (err) {
+      console.error('Error loading CSV:', err);
     }
+  }
 
-    loadCSV();
-  </script>
-
-</body>
-</html>
+  loadCSV();
+</script>

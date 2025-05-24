@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Inventory Grid</title>
   <style>
@@ -54,33 +54,12 @@
 <body>
 
   <h1>Inventory Grid</h1>
-  <div id="inventory"></div>
-
-  <!-- 🔁 Embedded CSV Data -->
-  <script id="csv-data" type="text/plain">
-Floor,Unit,Status
-12,1201,Sold
-12,1202,Available
-12,1203,Discussion
-12,1204,Available
-12,1205,Sold
-12,1206,Available
-11,1101,Available
-11,1102,Available
-11,1103,Sold
-11,1104,Available
-11,1105,Discussion
-11,1106,Available
-10,1001,Available
-10,1002,Sold
-10,1003,Available
-10,1004,Available
-10,1005,Available
-10,1006,Sold
-  </script>
+  <div id="inventory">Loading inventory...</div>
 
   <script>
-    function parseCSV(text) {
+    async function loadCSV(url) {
+      const res = await fetch(url);
+      const text = await res.text();
       const lines = text.trim().split('\n');
       const headers = lines[0].split(',').map(h => h.trim());
       const data = lines.slice(1).map(line => {
@@ -94,6 +73,7 @@ Floor,Unit,Status
 
     function renderGrid(units) {
       const container = document.getElementById('inventory');
+      container.innerHTML = '';
       const floors = [...new Set(units.map(u => u.Floor))].sort((a, b) => b - a);
 
       floors.forEach(floor => {
@@ -117,9 +97,14 @@ Floor,Unit,Status
       });
     }
 
-    const csvText = document.getElementById('csv-data').textContent;
-    const units = parseCSV(csvText);
-    renderGrid(units);
+    const csvUrl = 'https://raw.githubusercontent.com/YOUR-USERNAME/YOUR-REPO/main/data.csv'; // 👈 Replace this
+
+    loadCSV(csvUrl)
+      .then(renderGrid)
+      .catch(error => {
+        document.getElementById('inventory').innerText = 'Error loading data.';
+        console.error(error);
+      });
   </script>
 </body>
 </html>

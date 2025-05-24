@@ -4,36 +4,30 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Inventory Grid</title>
-
   <style>
     body {
       font-family: Arial, sans-serif;
       margin: 30px;
-      background: #f9f9f9;
+      background: #f4f4f4;
     }
 
-    h3 {
-      margin-top: 40px;
-      color: #222;
+    h1 {
+      margin-bottom: 20px;
     }
 
-    .floor-section {
-      margin-bottom: 30px;
-    }
-
-    .unit-row {
+    .grid-container {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+      grid-template-columns: repeat(6, 1fr);
       gap: 10px;
     }
 
     .unit-box {
-      padding: 12px 16px;
+      padding: 14px;
       border-radius: 8px;
-      font-weight: bold;
       text-align: center;
+      font-weight: bold;
       color: white;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     }
 
     .Sold {
@@ -49,26 +43,40 @@
       color: black;
     }
 
-    .unit-box:hover {
-      transform: scale(1.05);
-      transition: 0.2s ease;
-      cursor: pointer;
+    .floor-label {
+      grid-column: span 6;
+      font-size: 18px;
+      font-weight: bold;
+      margin-top: 20px;
     }
   </style>
 </head>
 <body>
-  <h1>Inventory Visualization</h1>
+
+  <h1>Inventory Grid</h1>
   <div id="inventory"></div>
 
-  <!-- 🔁 Embedded CSV as <script> -->
+  <!-- 🔁 Embedded CSV Data -->
   <script id="csv-data" type="text/plain">
 Floor,Unit,Status
-10,1001,Sold
-10,1002,Available
-10,1003,Discussion
-9,901,Available
-9,902,Sold
-9,903,Available
+12,1201,Sold
+12,1202,Available
+12,1203,Discussion
+12,1204,Available
+12,1205,Sold
+12,1206,Available
+11,1101,Available
+11,1102,Available
+11,1103,Sold
+11,1104,Available
+11,1105,Discussion
+11,1106,Available
+10,1001,Available
+10,1002,Sold
+10,1003,Available
+10,1004,Available
+10,1005,Available
+10,1006,Sold
   </script>
 
   <script>
@@ -84,50 +92,34 @@ Floor,Unit,Status
       return data;
     }
 
-    function groupByFloor(data) {
-      const grouped = {};
-      data.forEach(row => {
-        const floor = row['Floor'];
-        const unit = row['Unit'];
-        const status = row['Status'];
-        if (!grouped[floor]) grouped[floor] = [];
-        grouped[floor].push({ unit, status });
-      });
-      return grouped;
-    }
-
-    function render(grouped) {
+    function renderGrid(units) {
       const container = document.getElementById('inventory');
-      const sortedFloors = Object.keys(grouped).sort((a, b) => b - a); // High to low
+      const floors = [...new Set(units.map(u => u.Floor))].sort((a, b) => b - a);
 
-      sortedFloors.forEach(floor => {
-        const section = document.createElement('div');
-        section.className = 'floor-section';
-
-        const title = document.createElement('h3');
-        title.textContent = `Floor ${floor}`;
-        section.appendChild(title);
+      floors.forEach(floor => {
+        const floorUnits = units.filter(u => u.Floor === floor);
+        const label = document.createElement('div');
+        label.className = 'floor-label';
+        label.textContent = `Floor ${floor}`;
+        container.appendChild(label);
 
         const row = document.createElement('div');
-        row.className = 'unit-row';
+        row.className = 'grid-container';
 
-        grouped[floor].forEach(({ unit, status }) => {
-          const cell = document.createElement('div');
-          cell.textContent = unit;
-          cell.className = `unit-box ${status}`;
-          row.appendChild(cell);
+        floorUnits.forEach(unit => {
+          const box = document.createElement('div');
+          box.className = `unit-box ${unit.Status}`;
+          box.textContent = unit.Unit;
+          row.appendChild(box);
         });
 
-        section.appendChild(row);
-        container.appendChild(section);
+        container.appendChild(row);
       });
     }
 
-    // 🔁 Run
     const csvText = document.getElementById('csv-data').textContent;
-    const data = parseCSV(csvText);
-    const grouped = groupByFloor(data);
-    render(grouped);
+    const units = parseCSV(csvText);
+    renderGrid(units);
   </script>
 </body>
 </html>
